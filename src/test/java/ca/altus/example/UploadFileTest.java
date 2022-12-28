@@ -5,10 +5,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -20,7 +23,12 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
+import static org.springframework.web.reactive.function.BodyInserters.fromMultipartData;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 
@@ -70,22 +78,22 @@ public class UploadFileTest {
     @Test
     @DisplayName("Should upload file in S3 bucket")
     void uploadFile() throws Exception {
-
         // see https://www.baeldung.com/java-aws-s3-reactive
+        assertThat(s3.listBuckets().buckets(), hasSize(1));
 
-//        s3.putObject()
+        MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
+        multipartBodyBuilder.part("file", new ClassPathResource("test_file_2.txt"))
+                .contentType(MULTIPART_FORM_DATA);
 
+        webTestClient.put()
+                .uri("/file")
+                .body(fromMultipartData(multipartBodyBuilder.build()))
+                .exchange()
+                .expectStatus()
+                .isOk();
 
-//        MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-//        multipartBodyBuilder.part("file", new ClassPathResource("file_1.zip"))
-//                .contentType(MULTIPART_FORM_DATA);
-//
-//        webTestClient.put()
-//                .uri("/upload")
-//                .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
-//                .exchange()
-//                .expectStatus()
-//                .isOk();
+//        assertThat(s3.listBuckets().buckets(), hasSize(1));
+
 
     }
 }
