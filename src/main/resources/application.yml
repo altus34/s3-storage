@@ -1,0 +1,26 @@
+logging:
+  level:
+    root: DEBUG
+    reactor:
+      netty: DEBUG
+    org:
+      springframework:
+        security: DEBUG
+        cloud:
+          gateway: DEBUG
+
+spring:
+  cloud:
+    gateway:
+      httpclient:
+        wiretap: true
+      httpserver:
+        wiretap: true
+
+aws:
+  s3:
+    region: ${AWS_REGION}
+    accessKey: ${AWS_ACCESS_KEY}
+    secretKey: ${AWS_SECRET_KEY}
+    bucket: ${AWS_BUCKET_NAME}
+
