@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.S3Configuration;
 
-import java.time.Duration;
+import static java.time.Duration.ZERO;
 
 @Configuration
 @EnableConfigurationProperties(S3ClientProperties.class)
@@ -21,7 +21,7 @@ public class S3ClientConfiguration {
     @Bean
     public S3AsyncClient s3client(S3ClientProperties config, AwsCredentialsProvider credentialsProvider) {
         SdkAsyncHttpClient httpClient = NettyNioAsyncHttpClient.builder()
-                .writeTimeout(Duration.ZERO)
+                .writeTimeout(ZERO)
                 .maxConcurrency(64)
                 .build();
 
@@ -30,13 +30,17 @@ public class S3ClientConfiguration {
                 .chunkedEncodingEnabled(true)
                 .build();
 
-        S3AsyncClientBuilder b = S3AsyncClient.builder()
+        S3AsyncClientBuilder s3Builder = S3AsyncClient.builder()
                 .httpClient(httpClient)
                 .region(config.region())
                 .credentialsProvider(credentialsProvider)
                 .serviceConfiguration(serviceConfiguration);
 
-        return b.build();
+        if (config.endpoint() != null) {
+            s3Builder = s3Builder.endpointOverride(config.endpoint());
+        }
+
+        return s3Builder.build();
     }
 
     @Bean
