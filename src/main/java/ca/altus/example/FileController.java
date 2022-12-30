@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.core.SdkResponse;
@@ -24,6 +23,7 @@ import static org.springframework.web.reactive.function.server.ServerResponse.cr
 import static org.springframework.web.util.UriComponentsBuilder.newInstance;
 import static reactor.core.publisher.Mono.fromFuture;
 import static reactor.core.publisher.Mono.just;
+import static software.amazon.awssdk.services.s3.model.ChecksumAlgorithm.SHA1;
 
 public class FileController {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
@@ -41,7 +41,6 @@ public class FileController {
         var metadata = new HashMap<String, String>();
 
         var length = request.headers().contentLength().orElse(0);
-        LOGGER.debug("LENGTH =====> {}", length);
 
         Flux<ByteBuffer> body = request.body(BodyExtractors.toDataBuffers())
                 .flatMap(dataBuffer -> just(dataBuffer.toByteBuffer()));
@@ -50,6 +49,7 @@ public class FileController {
                 .putObject(PutObjectRequest.builder()
                                 .bucket(bucket)
                                 .contentLength(length)
+//                                .checksumAlgorithm(SHA1)
                                 .key(fileKey)
                                 .contentType(APPLICATION_OCTET_STREAM_VALUE)
                                 .metadata(metadata)

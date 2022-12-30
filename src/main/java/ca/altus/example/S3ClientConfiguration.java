@@ -26,7 +26,7 @@ public class S3ClientConfiguration {
                 .build();
 
         S3Configuration serviceConfiguration = S3Configuration.builder()
-                .checksumValidationEnabled(false)
+                .checksumValidationEnabled(false) // important to have streaming working
                 .chunkedEncodingEnabled(true)
                 .build();
 
